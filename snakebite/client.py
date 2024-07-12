@@ -1596,7 +1596,7 @@ class MultiHAClient(object):
             return path
         for k in reversed(sorted(self.links.keys())):
             if path == k or path.startswith(k+'/'):
-                return os.path.join(self.links[k][1], path[len(k):])
+                return os.path.join(self.links[k][1], path[len(k):].strip("/"))
         if self.links.get('_fallback'):
             return os.path.join(self.links['_fallback'][1], path)
         raise FileNotFoundException("`%s': No such file or directory" % path)
@@ -1621,8 +1621,8 @@ class MultiHAClient(object):
 
     def _path_link_replace(self, reqpath, path):
         for l, lv in self.links.items():
-            if reqpath == l or (reqpath.rstrip('/')+'/').startswith(l.rstrip('/')+'/'):
-                return os.path.join(l, path[len(lv[1]):])
+            if reqpath == l or reqpath.startswith(l.rstrip("/")):
+                return os.path.join(l, path[len(lv[1]):].strip("/"))
         return path
 
     def chmod(self, paths, *args, **kwargs):
@@ -1803,3 +1803,4 @@ class AutoConfigClient(MultiHAClient):
                                                configs.get('client_sleep_base_millis'), configs.get('client_sleep_max_millis'),
                                                10000, configs.get('socket_timeout_millis'),
                                                use_datanode_hostname=configs.get('use_datanode_hostname', False))
+
